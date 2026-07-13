@@ -1,4 +1,4 @@
-# INMU Chain Prototype
+# ryuya-inmu-chain
 
 CPU対戦でルールを覚えるための最小プロトタイプです。
 
