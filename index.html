@@ -427,7 +427,8 @@
       font-weight: 900;
       text-shadow: 0 1px 4px rgba(0,0,0,.7);
     }
-    .portrait {
+    .piece-frame {
+      position: relative;
       width: min(56px, 70%);
       aspect-ratio: 1;
       display: grid;
@@ -442,17 +443,33 @@
         0 0 0 5px rgba(0,0,0,.35),
         0 0 0 8px rgba(49,244,211,.24),
         0 0 20px rgba(49,244,211,.34);
+      overflow: visible;
     }
-    .cpu .portrait {
+    .cpu .piece-frame {
       background: linear-gradient(135deg, var(--cpu), var(--cpu-2));
       box-shadow:
         0 0 0 5px rgba(0,0,0,.35),
         0 0 0 8px rgba(255,79,139,.22),
         0 0 20px rgba(255,79,139,.34);
     }
-    .leader .portrait {
+    .leader .piece-frame {
       background: linear-gradient(135deg, var(--gold), #fff7ad);
       box-shadow: 0 0 24px rgba(250,204,21,.35);
+    }
+    .piece-3d {
+      position: absolute;
+      inset: -28%;
+      width: 156%;
+      height: 156%;
+      display: block;
+      z-index: 1;
+    }
+    .piece-fallback {
+      position: relative;
+      z-index: 0;
+    }
+    .piece-frame.is-3d .piece-fallback {
+      opacity: 0;
     }
     .arrows {
       position: absolute;
@@ -527,6 +544,23 @@
     }
     .stats .atk-pill {
       background: rgba(0,0,0,.62);
+    }
+    .unit-trait {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      z-index: 3;
+      min-width: 1.35rem;
+      min-height: 1.35rem;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      color: #061118;
+      background: linear-gradient(135deg, var(--gold), var(--player));
+      border: 1px solid rgba(255,255,255,.58);
+      font-size: .72rem;
+      font-weight: 1000;
+      box-shadow: 0 0 12px rgba(217,255,90,.36);
     }
     .leader {
       outline: 2px solid rgba(250,204,21,.8);
@@ -826,12 +860,12 @@
       };
       const arrowCells = ['NW','N','NE','W','C','E','SW','S','SE'];
       const roster = [
-        { name: '拓也', mark: '卍', hp: 7, atk: 3, arrows: ['N','NE','NW'], skill: '追撃' },
+        { name: '拓也', mark: '卍', hp: 7, atk: 3, arrows: ['N','NE','NW'], skill: '追撃', pierce: true },
         { name: 'ニャルシアン', mark: '肉', hp: 5, atk: 2, arrows: ['N','E','W','SE','SW'], skill: '回復' },
         { name: 'レオン', mark: '王', hp: 9, atk: 2, arrows: ['N','E','S','W'], skill: '守護' },
         { name: 'INMUくん', mark: '?', hp: 4, atk: 4, arrows: ['NE','NW','SE','SW'], skill: '奇襲' },
         { name: 'ミラ', mark: '光', hp: 6, atk: 2, arrows: ['N','NE','E'], skill: '展開' },
-        { name: 'ゴウ', mark: '剛', hp: 8, atk: 3, arrows: ['N','S'], skill: '突破' }
+        { name: 'ゴウ', mark: '剛', hp: 8, atk: 3, arrows: ['N','S'], skill: '突破', pierce: true }
       ];
       let state;
       let lastEffects = [];
@@ -846,6 +880,7 @@
           maxHp: leader ? 30 : base.hp,
           atk: leader ? 0 : base.atk,
           arrows: leader ? [] : base.arrows.slice(),
+          pierce: !leader && !!base.pierce,
           side,
           leader
         };
@@ -890,7 +925,8 @@
 
       function renderUnit(unit) {
         return '<div class="unit"><div class="unit-name">' + unit.name + '</div>' +
-          '<div class="portrait">' + unit.mark + '</div>' +
+          '<div class="piece-frame"><canvas class="piece-3d" data-side="' + unit.side + '" data-mark="' + unit.mark + '" data-leader="' + String(unit.leader) + '"></canvas><span class="piece-fallback">' + unit.mark + '</span></div>' +
+          (unit.pierce ? '<span class="unit-trait">貫</span>' : '') +
           renderArrows(unit) +
           '<div class="stats"><span class="hp-pill">' + unit.hp + '</span><span class="atk-pill">⚔ ' + unit.atk + '</span></div></div>';
       }
@@ -939,7 +975,7 @@
           btn.disabled = state.locked || state.over || state.turn !== 'player';
           btn.innerHTML = '<div class="card-name">' + card.name + '</div>' +
             '<div class="card-core"><div class="card-sigil">' + card.mark + '</div>' + renderArrowMap(card.arrows, 'card-arrow-map') + '</div>' +
-            '<div class="card-meta"><span class="chip">HP ' + card.hp + '</span><span class="chip">ATK ' + card.atk + '</span><span class="chip">' + card.skill + '</span></div>';
+            '<div class="card-meta"><span class="chip">HP ' + card.hp + '</span><span class="chip">ATK ' + card.atk + '</span><span class="chip">' + card.skill + '</span>' + (card.pierce ? '<span class="chip">貫通</span>' : '') + '</div>';
           btn.addEventListener('click', () => { state.selected = i; render(); });
           handEl.appendChild(btn);
         });
@@ -952,6 +988,7 @@
         document.getElementById('cpu-gaugebar').style.width = Math.max(0, state.cpuGauge / 10 * 100) + '%';
         turnEl.textContent = state.turn === 'player' ? 'PLAYER TURN' : 'CPU TURN';
         specialBtn.disabled = state.locked || state.over || state.turn !== 'player' || state.playerGauge < 10;
+        window.INMUPiece3D?.hydrate();
       }
 
       function placePlayer(i) {
@@ -998,11 +1035,15 @@
         let score = side === 'cpu' ? r : 4 - r;
         for (const d of card.arrows) {
           const [dr, dc] = dirs[d];
-          const nr = r + dr, nc = c + dc;
-          if (!inBounds(nr, nc)) continue;
-          const target = state.cells[indexOf(nr, nc)];
-          if (target && target.side !== side) score += target.leader ? 10 : 4;
-          if (target && target.side === side && !target.leader) score += 3;
+          let nr = r + dr, nc = c + dc;
+          while (inBounds(nr, nc)) {
+            const target = state.cells[indexOf(nr, nc)];
+            if (target && target.side !== side) score += target.leader ? 10 : 4;
+            if (target && target.side === side && !target.leader) score += 3;
+            if (!card.pierce) break;
+            nr += dr;
+            nc += dc;
+          }
         }
         return score + Math.random();
       }
@@ -1023,17 +1064,22 @@
           const [r, c] = posOf(i);
           for (const d of unit.arrows) {
             const [dr, dc] = dirs[d];
-            const nr = r + dr, nc = c + dc;
-            if (!inBounds(nr, nc)) continue;
-            const ni = indexOf(nr, nc);
-            const target = state.cells[ni];
-            if (!target) continue;
-            if (target.side === side && !target.leader && !seen.has(ni)) {
-              lastLinks.push({ from: i, to: ni, side, chain: true });
-              queue.push(ni);
-            } else if (target.side !== side) {
-              damageTarget(ni, unit.atk, side, i);
-              hits += 1;
+            let nr = r + dr, nc = c + dc;
+            while (inBounds(nr, nc)) {
+              const ni = indexOf(nr, nc);
+              const target = state.cells[ni];
+              if (target) {
+                if (target.side === side && !target.leader && !seen.has(ni)) {
+                  lastLinks.push({ from: i, to: ni, side, chain: true });
+                  queue.push(ni);
+                } else if (target.side !== side) {
+                  damageTarget(ni, unit.atk, side, i, unit.pierce);
+                  hits += 1;
+                }
+              }
+              if (!unit.pierce) break;
+              nr += dr;
+              nc += dc;
             }
           }
         }
@@ -1046,7 +1092,7 @@
         return hits;
       }
 
-      function damageTarget(i, amount, side, fromIndex) {
+      function damageTarget(i, amount, side, fromIndex, pierce = false) {
         const target = state.cells[i];
         if (!target) return;
         if (fromIndex != null) lastLinks.push({ from: fromIndex, to: i, side, hit: true });
@@ -1058,7 +1104,7 @@
           if (target.hp <= 0) state.cells[i] = null;
         }
         lastEffects.push({ index: i, amount });
-        logEl.textContent = (side === 'player' ? 'LINK CHAIN! ' : 'CPU LINK! ') + amount + 'ダメージ。';
+        logEl.textContent = (pierce ? 'PIERCE LINK! ' : (side === 'player' ? 'LINK CHAIN! ' : 'CPU LINK! ')) + amount + 'ダメージ。';
       }
 
       function showDamage(i, amount) {
@@ -1303,6 +1349,171 @@
         .catch(() => {
           host.classList.remove('is-3d');
         });
+    })();
+  </script>
+  <script>
+    (() => {
+      const CDN = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+      let threePromise;
+      const actors = [];
+
+      function loadThree() {
+        if (!threePromise) threePromise = import(CDN);
+        return threePromise;
+      }
+
+      function hydrate() {
+        const canvases = document.querySelectorAll('.piece-3d:not([data-ready])');
+        if (!canvases.length) return;
+        loadThree()
+          .then((THREE) => {
+            canvases.forEach((canvas) => {
+              if (canvas.dataset.ready) return;
+              canvas.dataset.ready = 'true';
+              const frame = canvas.closest('.piece-frame');
+              const side = canvas.dataset.side || 'player';
+              const mark = canvas.dataset.mark || '?';
+              const leader = canvas.dataset.leader === 'true';
+              const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+              renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+              renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+              const scene = new THREE.Scene();
+              const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 100);
+              camera.position.set(0, 0.12, leader ? 4.8 : 4.35);
+
+              const root = new THREE.Group();
+              scene.add(root);
+
+              const player = side === 'player';
+              const primary = leader ? 0xd9ff5a : (player ? 0x31f4d3 : 0xff4f8b);
+              const secondary = leader ? 0x31f4d3 : (player ? 0x29a9ff : 0x9b5cff);
+              const bodyMat = new THREE.MeshStandardMaterial({
+                color: primary,
+                emissive: primary,
+                emissiveIntensity: 0.28,
+                metalness: 0.32,
+                roughness: 0.26
+              });
+              const trimMat = new THREE.MeshStandardMaterial({
+                color: secondary,
+                emissive: secondary,
+                emissiveIntensity: 0.42,
+                metalness: 0.38,
+                roughness: 0.22
+              });
+              const darkMat = new THREE.MeshStandardMaterial({
+                color: 0x061118,
+                emissive: 0x010304,
+                emissiveIntensity: 0.18,
+                metalness: 0.16,
+                roughness: 0.36
+              });
+              const lightMat = new THREE.MeshBasicMaterial({
+                color: 0xecfff9,
+                transparent: true,
+                opacity: 0.9
+              });
+
+              const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.42, 0.66, 7, 18), bodyMat);
+              body.position.y = -0.42;
+              root.add(body);
+
+              const head = new THREE.Mesh(new THREE.SphereGeometry(0.47, 28, 18), trimMat);
+              head.position.y = 0.32;
+              root.add(head);
+
+              const visor = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.14, 0.08), lightMat);
+              visor.position.set(0, 0.4, 0.43);
+              root.add(visor);
+
+              const core = new THREE.Mesh(new THREE.TorusGeometry(0.25, 0.033, 10, 42), lightMat);
+              core.position.set(0, -0.34, 0.41);
+              root.add(core);
+
+              const armGeo = new THREE.CapsuleGeometry(0.075, 0.42, 6, 12);
+              const armL = new THREE.Mesh(armGeo, bodyMat);
+              armL.position.set(-0.48, -0.28, 0.03);
+              armL.rotation.z = 0.72;
+              const armR = armL.clone();
+              armR.position.x = 0.48;
+              armR.rotation.z = -0.72;
+              root.add(armL, armR);
+
+              const legGeo = new THREE.CapsuleGeometry(0.08, 0.34, 6, 12);
+              const legL = new THREE.Mesh(legGeo, darkMat);
+              legL.position.set(-0.18, -0.95, 0.02);
+              legL.rotation.z = 0.16;
+              const legR = legL.clone();
+              legR.position.x = 0.18;
+              legR.rotation.z = -0.16;
+              root.add(legL, legR);
+
+              const halo = new THREE.Mesh(new THREE.TorusGeometry(0.74, 0.025, 8, 64), lightMat);
+              halo.rotation.x = 1.22;
+              halo.position.y = -0.18;
+              root.add(halo);
+
+              if (leader) {
+                const crown = new THREE.Mesh(new THREE.TorusKnotGeometry(0.2, 0.035, 48, 8), lightMat);
+                crown.position.y = 0.92;
+                root.add(crown);
+              } else if (mark === '卍' || mark === '剛') {
+                const blade = new THREE.Mesh(new THREE.ConeGeometry(0.09, 0.58, 18), lightMat);
+                blade.position.set(0.54, -0.08, 0.28);
+                blade.rotation.z = -0.64;
+                root.add(blade);
+              }
+
+              const key = new THREE.PointLight(primary, 2.1, 5);
+              key.position.set(1.8, 1.4, 2.4);
+              const fill = new THREE.PointLight(secondary, 1.4, 5);
+              fill.position.set(-1.6, -0.8, 2.2);
+              scene.add(key, fill, new THREE.AmbientLight(0xffffff, 0.85));
+
+              frame?.classList.add('is-3d');
+              actors.push({ THREE, canvas, renderer, scene, camera, root, halo, core, start: Math.random() * 10 });
+              resizeActor(actors[actors.length - 1]);
+            });
+            startLoop();
+          })
+          .catch(() => {});
+      }
+
+      function resizeActor(actor) {
+        const rect = actor.canvas.getBoundingClientRect();
+        const size = Math.max(1, Math.floor(Math.min(rect.width || 80, rect.height || 80)));
+        actor.renderer.setSize(size, size, false);
+        actor.camera.aspect = 1;
+        actor.camera.updateProjectionMatrix();
+      }
+
+      let running = false;
+      let raf = 0;
+      function startLoop() {
+        if (running) return;
+        running = true;
+        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const tick = (time) => {
+          actors.forEach((actor, index) => {
+            if (!document.body.contains(actor.canvas)) return;
+            const t = time * 0.001 + actor.start;
+            actor.root.rotation.y = Math.sin(t * 1.1) * 0.45;
+            actor.root.rotation.x = Math.sin(t * 0.8) * 0.08;
+            actor.root.position.y = Math.sin(t * 2.2) * 0.08;
+            actor.halo.rotation.z = t * (index % 2 ? -1.15 : 1.15);
+            actor.core.rotation.z = -t * 1.7;
+            actor.renderer.render(actor.scene, actor.camera);
+          });
+          if (!reducedMotion) raf = requestAnimationFrame(tick);
+        };
+        raf = requestAnimationFrame(tick);
+      }
+
+      window.addEventListener('resize', () => actors.forEach(resizeActor));
+      window.addEventListener('pagehide', () => cancelAnimationFrame(raf), { once: true });
+      window.INMUPiece3D = { hydrate };
+      hydrate();
     })();
   </script>
 </body>
