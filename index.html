@@ -429,7 +429,7 @@
     }
     .piece-frame {
       position: relative;
-      width: min(56px, 70%);
+      width: min(72px, 82%);
       aspect-ratio: 1;
       display: grid;
       place-items: center;
@@ -458,9 +458,9 @@
     }
     .piece-3d {
       position: absolute;
-      inset: -28%;
-      width: 156%;
-      height: 156%;
+      inset: -46%;
+      width: 192%;
+      height: 192%;
       display: block;
       z-index: 1;
     }
@@ -925,7 +925,7 @@
 
       function renderUnit(unit) {
         return '<div class="unit"><div class="unit-name">' + unit.name + '</div>' +
-          '<div class="piece-frame"><canvas class="piece-3d" data-side="' + unit.side + '" data-mark="' + unit.mark + '" data-leader="' + String(unit.leader) + '"></canvas><span class="piece-fallback">' + unit.mark + '</span></div>' +
+          '<div class="piece-frame"><canvas class="piece-3d" data-side="' + unit.side + '" data-name="' + unit.name + '" data-mark="' + unit.mark + '" data-leader="' + String(unit.leader) + '"></canvas><span class="piece-fallback">' + unit.mark + '</span></div>' +
           (unit.pierce ? '<span class="unit-trait">貫</span>' : '') +
           renderArrows(unit) +
           '<div class="stats"><span class="hp-pill">' + unit.hp + '</span><span class="atk-pill">⚔ ' + unit.atk + '</span></div></div>';
@@ -1372,6 +1372,7 @@
               canvas.dataset.ready = 'true';
               const frame = canvas.closest('.piece-frame');
               const side = canvas.dataset.side || 'player';
+              const name = canvas.dataset.name || '';
               const mark = canvas.dataset.mark || '?';
               const leader = canvas.dataset.leader === 'true';
               const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
@@ -1380,14 +1381,30 @@
 
               const scene = new THREE.Scene();
               const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 100);
-              camera.position.set(0, 0.12, leader ? 4.8 : 4.35);
+              camera.position.set(0, 0.08, leader ? 4.25 : 3.85);
 
               const root = new THREE.Group();
               scene.add(root);
 
               const player = side === 'player';
-              const primary = leader ? 0xd9ff5a : (player ? 0x31f4d3 : 0xff4f8b);
-              const secondary = leader ? 0x31f4d3 : (player ? 0x29a9ff : 0x9b5cff);
+              let primary = leader ? 0xd9ff5a : (player ? 0x31f4d3 : 0xff4f8b);
+              let secondary = leader ? 0x31f4d3 : (player ? 0x29a9ff : 0x9b5cff);
+              if (mark === '王') {
+                primary = 0xd0a05a;
+                secondary = 0x7a4a24;
+              } else if (mark === '肉') {
+                primary = 0xf4f1e8;
+                secondary = 0xffb7c9;
+              } else if (mark === '?') {
+                primary = 0xe78a22;
+                secondary = 0x19140f;
+              } else if (mark === '卍') {
+                primary = 0xf0c28b;
+                secondary = 0x23242b;
+              } else if (mark === '剛') {
+                primary = 0xd66b22;
+                secondary = 0x3a2a18;
+              }
               const bodyMat = new THREE.MeshStandardMaterial({
                 color: primary,
                 emissive: primary,
@@ -1413,6 +1430,27 @@
                 color: 0xecfff9,
                 transparent: true,
                 opacity: 0.9
+              });
+              const accentMat = new THREE.MeshStandardMaterial({
+                color: 0xd9ff5a,
+                emissive: 0x6f8f05,
+                emissiveIntensity: 0.45,
+                metalness: 0.18,
+                roughness: 0.28
+              });
+              const whiteMat = new THREE.MeshStandardMaterial({
+                color: 0xf8f4ed,
+                emissive: 0x30261f,
+                emissiveIntensity: 0.08,
+                metalness: 0.05,
+                roughness: 0.42
+              });
+              const pinkMat = new THREE.MeshStandardMaterial({
+                color: 0xffb7c9,
+                emissive: 0x4b1f30,
+                emissiveIntensity: 0.16,
+                metalness: 0.04,
+                roughness: 0.36
               });
 
               const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.42, 0.66, 7, 18), bodyMat);
@@ -1448,6 +1486,8 @@
               legR.position.x = 0.18;
               legR.rotation.z = -0.16;
               root.add(legL, legR);
+
+              addCharacterParts(THREE, root, { mark, name, leader, bodyMat, trimMat, darkMat, lightMat, accentMat, whiteMat, pinkMat });
 
               const halo = new THREE.Mesh(new THREE.TorusGeometry(0.74, 0.025, 8, 64), lightMat);
               halo.rotation.x = 1.22;
@@ -1486,6 +1526,115 @@
         actor.renderer.setSize(size, size, false);
         actor.camera.aspect = 1;
         actor.camera.updateProjectionMatrix();
+      }
+
+      function addCharacterParts(THREE, root, kit) {
+        const { mark, bodyMat, trimMat, darkMat, lightMat, accentMat, whiteMat, pinkMat } = kit;
+        if (mark === '王') {
+          const mane = new THREE.Mesh(new THREE.TorusGeometry(0.58, 0.13, 16, 40), trimMat);
+          mane.position.set(0, 0.31, -0.02);
+          mane.rotation.x = 0.08;
+          root.add(mane);
+          addEarPair(THREE, root, bodyMat, 0.36, 0.72, 0.17, 0.16);
+          const muzzle = new THREE.Mesh(new THREE.SphereGeometry(0.18, 18, 12), whiteMat);
+          muzzle.scale.set(1.25, 0.72, 0.55);
+          muzzle.position.set(0, 0.22, 0.44);
+          root.add(muzzle);
+          const cape = new THREE.Mesh(new THREE.BoxGeometry(0.78, 0.38, 0.05), accentMat);
+          cape.position.set(0, -0.42, -0.22);
+          cape.rotation.x = -0.18;
+          root.add(cape);
+        } else if (mark === '肉') {
+          addEarPair(THREE, root, whiteMat, 0.32, 0.78, 0.19, 0.2);
+          const innerL = new THREE.Mesh(new THREE.ConeGeometry(0.085, 0.19, 3), pinkMat);
+          innerL.position.set(-0.32, 0.78, 0.19);
+          innerL.rotation.set(0.1, 0, 0.48);
+          const innerR = innerL.clone();
+          innerR.position.x = 0.32;
+          innerR.rotation.z = -0.48;
+          root.add(innerL, innerR);
+          const tail = new THREE.Mesh(new THREE.TorusGeometry(0.28, 0.045, 10, 32, Math.PI * 1.35), whiteMat);
+          tail.position.set(0.48, -0.45, -0.1);
+          tail.rotation.set(0.4, 0.2, -0.9);
+          root.add(tail);
+          const bell = new THREE.Mesh(new THREE.SphereGeometry(0.08, 16, 12), accentMat);
+          bell.position.set(0, -0.02, 0.45);
+          root.add(bell);
+        } else if (mark === '?') {
+          addEarPair(THREE, root, bodyMat, 0.33, 0.7, 0.12, 0.13, true);
+          const glasses = new THREE.Group();
+          const lensL = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.12, 0.045), darkMat);
+          lensL.position.x = -0.14;
+          const lensR = lensL.clone();
+          lensR.position.x = 0.14;
+          const bridge = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.035, 0.035), darkMat);
+          glasses.add(lensL, lensR, bridge);
+          glasses.position.set(0, 0.42, 0.48);
+          root.add(glasses);
+          const tail = new THREE.Mesh(new THREE.CapsuleGeometry(0.045, 0.38, 6, 10), bodyMat);
+          tail.position.set(0.43, -0.58, -0.12);
+          tail.rotation.set(0.25, 0.15, -0.82);
+          root.add(tail);
+          const pouch = new THREE.Mesh(new THREE.SphereGeometry(0.18, 18, 12), accentMat);
+          pouch.scale.set(1.1, 0.7, 0.25);
+          pouch.position.set(0, -0.36, 0.43);
+          root.add(pouch);
+        } else if (mark === '卍') {
+          addHairSpikes(THREE, root, darkMat, 5);
+          const sash = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.1, 0.06), accentMat);
+          sash.position.set(0, -0.32, 0.48);
+          sash.rotation.z = -0.32;
+          root.add(sash);
+          const shoulderL = new THREE.Mesh(new THREE.SphereGeometry(0.14, 16, 10), trimMat);
+          shoulderL.position.set(-0.42, -0.06, 0.24);
+          const shoulderR = shoulderL.clone();
+          shoulderR.position.x = 0.42;
+          root.add(shoulderL, shoulderR);
+        } else if (mark === '剛') {
+          addHairSpikes(THREE, root, trimMat, 4);
+          const armor = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.32, 0.08), darkMat);
+          armor.position.set(0, -0.42, 0.44);
+          root.add(armor);
+          const hornL = new THREE.Mesh(new THREE.ConeGeometry(0.075, 0.32, 14), accentMat);
+          hornL.position.set(-0.28, 0.76, 0.08);
+          hornL.rotation.z = 0.45;
+          const hornR = hornL.clone();
+          hornR.position.x = 0.28;
+          hornR.rotation.z = -0.45;
+          root.add(hornL, hornR);
+        } else if (mark === '光') {
+          const wingL = new THREE.Mesh(new THREE.SphereGeometry(0.24, 18, 12), lightMat);
+          wingL.scale.set(0.45, 1.25, 0.12);
+          wingL.position.set(-0.52, -0.1, -0.08);
+          wingL.rotation.z = -0.38;
+          const wingR = wingL.clone();
+          wingR.position.x = 0.52;
+          wingR.rotation.z = 0.38;
+          root.add(wingL, wingR);
+          const star = new THREE.Mesh(new THREE.TetrahedronGeometry(0.16), accentMat);
+          star.position.set(0, 0.86, 0.26);
+          root.add(star);
+        }
+      }
+
+      function addEarPair(THREE, root, mat, x, y, z, size, floppy = false) {
+        const earL = new THREE.Mesh(new THREE.ConeGeometry(size, size * 1.55, 3), mat);
+        earL.position.set(-x, y, z);
+        earL.rotation.set(floppy ? 0.75 : 0.08, 0, floppy ? -0.8 : 0.48);
+        const earR = earL.clone();
+        earR.position.x = x;
+        earR.rotation.z = floppy ? 0.8 : -0.48;
+        root.add(earL, earR);
+      }
+
+      function addHairSpikes(THREE, root, mat, count) {
+        for (let i = 0; i < count; i += 1) {
+          const spike = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.34, 14), mat);
+          const offset = i - (count - 1) / 2;
+          spike.position.set(offset * 0.13, 0.76 + Math.abs(offset) * -0.035, 0.12);
+          spike.rotation.z = offset * -0.25;
+          root.add(spike);
+        }
       }
 
       let running = false;
