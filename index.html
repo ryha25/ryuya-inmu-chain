@@ -6,319 +6,632 @@
   <title>INMU Chain Prototype</title>
   <style>
     :root {
-      --font-size-base: 16px;
-      --background: #101316;
-      --foreground: #f2f5f4;
-      --muted: #273039;
-      --muted-foreground: #aeb9b6;
-      --primary: #f2f5f4;
-      --primary-foreground: #101316;
-      --border: #3a444d;
-      --ring: #f2cf66;
-      --destructive: #ff716b;
-      --viz-series-1: #55d6a7;
-      --viz-series-2: #ff9b73;
+      --bg: #0b1020;
+      --ink: #f7f8ff;
+      --soft: #a9b5d6;
+      --panel: #141b31;
+      --panel-2: #1a2440;
+      --line: rgba(255,255,255,.18);
+      --player: #22d3ee;
+      --player-2: #8b5cf6;
+      --cpu: #fb7185;
+      --cpu-2: #f59e0b;
+      --gold: #facc15;
+      --green: #34d399;
+      --danger: #fb7185;
+      --cell: clamp(66px, 18vw, 96px);
+      color-scheme: dark;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
       min-height: 100vh;
-      background: var(--background);
-      color: var(--foreground);
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      font-size: var(--font-size-base);
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 16%, rgba(34,211,238,.18), transparent 28%),
+        radial-gradient(circle at 88% 8%, rgba(251,113,133,.16), transparent 25%),
+        linear-gradient(135deg, #070a13 0%, var(--bg) 48%, #111827 100%);
       display: grid;
       place-items: start center;
-      padding: 24px 12px;
+      padding: 18px 10px 28px;
     }
     main {
-      width: min(100%, 760px);
+      width: min(100%, 860px);
+    }
+    .title-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: end;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
     }
     h1 {
-      margin: 0 0 16px;
-      font-size: 1.45rem;
-      font-weight: 500;
-      letter-spacing: 0;
+      margin: 0;
+      font-size: clamp(1.35rem, 4vw, 2rem);
+      font-weight: 800;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+    .subtitle {
+      color: var(--soft);
+      font-size: .9rem;
     }
     button {
       font: inherit;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: transparent;
-      color: var(--foreground);
+      color: inherit;
+      border: 0;
       cursor: pointer;
     }
     button:disabled {
       cursor: not-allowed;
-      opacity: .58;
+      opacity: .55;
     }
-    .btn {
-      padding: .45rem .7rem;
+    .game {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.08), transparent 24%),
+        rgba(8, 13, 27, .9);
+      box-shadow: 0 28px 90px rgba(0,0,0,.36);
+      padding: 14px;
     }
-    .btn-primary,
-    .card-btn[aria-pressed="true"] {
-      background: var(--primary);
-      color: var(--primary-foreground);
+    .game::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: linear-gradient(180deg, transparent, black 18%, black 82%, transparent);
     }
-    .btn-ghost {
-      padding: 0;
-    }
-    .viz-badge {
-      display: inline-flex;
-      align-items: center;
-      min-height: 2rem;
-      padding: .25rem .55rem;
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      color: var(--muted-foreground);
-    }
-    .text-small {
-      font-size: .88rem;
-    }
-    .text-muted {
-      color: var(--muted-foreground);
-    }
-  </style>
-</head>
-<body>
-<main>
-  <h1>INMU Chain Prototype</h1>
-<div id="inmu-chain-prototype" class="inmu-chain">
-  <style>
-    #inmu-chain-prototype {
-      --cell: clamp(62px, 16vw, 92px);
-      color: var(--foreground);
-    }
-    #inmu-chain-prototype .topbar,
-    #inmu-chain-prototype .hand,
-    #inmu-chain-prototype .logbar {
+    .topbar {
+      position: relative;
+      z-index: 1;
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: .6rem;
-      margin-bottom: .75rem;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
     }
-    #inmu-chain-prototype .meters {
+    .actions,
+    .status-strip {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn {
+      min-height: 38px;
+      border-radius: 10px;
+      padding: 8px 12px;
+      color: var(--ink);
+      background: rgba(255,255,255,.09);
+      border: 1px solid var(--line);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+    }
+    .btn-primary {
+      color: #06111a;
+      background: linear-gradient(135deg, var(--player), var(--green));
+      border-color: rgba(255,255,255,.28);
+      font-weight: 800;
+    }
+    .btn-special {
+      color: #1e1203;
+      background: linear-gradient(135deg, var(--gold), var(--cpu-2));
+      font-weight: 800;
+    }
+    .badge {
+      min-height: 34px;
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 6px 11px;
+      border: 1px solid var(--line);
+      color: var(--soft);
+      background: rgba(0,0,0,.24);
+      font-size: .86rem;
+      font-weight: 700;
+      letter-spacing: .04em;
+    }
+    .result {
+      color: var(--gold);
+      font-size: 1.15rem;
+      font-weight: 900;
+      letter-spacing: .08em;
+    }
+    .leader-row {
+      position: relative;
+      z-index: 1;
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: .65rem;
-      margin-bottom: .75rem;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 10px;
+      background: linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
     }
-    #inmu-chain-prototype .meter {
+    .leader-row.cpu {
+      grid-template-columns: auto 1fr;
+      margin-bottom: 10px;
+      border-color: rgba(251,113,133,.32);
+    }
+    .leader-row.player {
+      margin-top: 10px;
+      border-color: rgba(34,211,238,.32);
+    }
+    .leader-avatar {
+      width: 54px;
+      aspect-ratio: 1;
       display: grid;
-      gap: .25rem;
+      place-items: center;
+      border-radius: 50%;
+      font-weight: 900;
+      font-size: 1.2rem;
+      border: 2px solid rgba(255,255,255,.36);
+      box-shadow: 0 0 28px rgba(255,255,255,.12);
     }
-    #inmu-chain-prototype .meter-head {
+    .cpu .leader-avatar {
+      background: linear-gradient(135deg, var(--cpu), var(--cpu-2));
+    }
+    .player .leader-avatar {
+      background: linear-gradient(135deg, var(--player), var(--player-2));
+    }
+    .leader-main {
+      min-width: 0;
+      display: grid;
+      gap: 6px;
+    }
+    .leader-name {
       display: flex;
       justify-content: space-between;
-      gap: .5rem;
-      font-weight: 500;
+      gap: 10px;
+      font-weight: 900;
     }
-    #inmu-chain-prototype .bar {
-      height: .7rem;
-      border: 1px solid var(--border);
-      background: color-mix(in srgb, var(--muted) 55%, transparent);
+    .hp-track,
+    .gauge-track {
+      height: 12px;
       overflow: hidden;
+      border-radius: 999px;
+      background: rgba(0,0,0,.38);
+      border: 1px solid rgba(255,255,255,.13);
     }
-    #inmu-chain-prototype .fill {
-      height: 100%;
+    .gauge-track {
+      height: 8px;
+    }
+    .hp-fill,
+    .gauge-fill {
       width: 50%;
-      background: var(--viz-series-1);
-      transition: width .22s ease;
+      height: 100%;
+      transition: width .28s ease;
+      background: linear-gradient(90deg, var(--player), var(--green));
     }
-    #inmu-chain-prototype .cpu-fill {
-      background: var(--viz-series-2);
+    .cpu-fill {
+      background: linear-gradient(90deg, var(--cpu), var(--cpu-2));
     }
-    #inmu-chain-prototype .arena {
+    .arena {
+      position: relative;
+      z-index: 1;
       display: grid;
-      grid-template-columns: minmax(0, 1fr);
-      gap: .75rem;
+      justify-items: center;
     }
-    #inmu-chain-prototype .board {
+    .board-wrap {
+      position: relative;
+      padding: 12px;
+      border-radius: 20px;
+      background:
+        linear-gradient(180deg, rgba(251,113,133,.14), transparent 35%, rgba(34,211,238,.14)),
+        rgba(0,0,0,.22);
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow: inset 0 0 42px rgba(255,255,255,.04);
+    }
+    .board {
       display: grid;
       grid-template-columns: repeat(3, var(--cell));
       grid-template-rows: repeat(5, var(--cell));
-      gap: .35rem;
-      justify-content: center;
+      gap: 7px;
       touch-action: manipulation;
     }
-    #inmu-chain-prototype .cell {
+    .cell {
       position: relative;
-      border: 1px solid var(--border);
-      background: color-mix(in srgb, var(--muted) 36%, transparent);
-      color: var(--foreground);
-      padding: .2rem;
-      display: grid;
-      place-items: center;
       min-width: 0;
       min-height: 0;
+      padding: 0;
+      border-radius: 13px;
+      border: 1px solid rgba(255,255,255,.14);
+      color: var(--ink);
+      background:
+        linear-gradient(145deg, rgba(255,255,255,.09), rgba(255,255,255,.02)),
+        rgba(255,255,255,.035);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 8px 18px rgba(0,0,0,.22);
+      overflow: hidden;
+      transition: transform .14s ease, border-color .14s ease, box-shadow .14s ease;
     }
-    #inmu-chain-prototype .cell.player-zone {
-      background: color-mix(in srgb, var(--viz-series-1) 12%, transparent);
+    .cell::before {
+      content: "";
+      position: absolute;
+      inset: 7px;
+      border: 1px dashed rgba(255,255,255,.1);
+      border-radius: 10px;
+      pointer-events: none;
     }
-    #inmu-chain-prototype .cell.cpu-zone {
-      background: color-mix(in srgb, var(--viz-series-2) 12%, transparent);
+    .cell.player-zone {
+      background:
+        linear-gradient(145deg, rgba(34,211,238,.16), rgba(139,92,246,.05)),
+        rgba(255,255,255,.04);
     }
-    #inmu-chain-prototype .unit {
+    .cell.cpu-zone {
+      background:
+        linear-gradient(145deg, rgba(251,113,133,.16), rgba(245,158,11,.05)),
+        rgba(255,255,255,.04);
+    }
+    .cell:not(:disabled):hover,
+    .cell:not(:disabled):focus-visible {
+      transform: translateY(-2px);
+      border-color: rgba(250,204,21,.75);
+      box-shadow: 0 0 0 3px rgba(250,204,21,.15), 0 14px 28px rgba(0,0,0,.28);
+    }
+    .cell.hit-cell {
+      animation: hitCell .5s ease;
+    }
+    .unit {
+      position: relative;
       width: 100%;
       height: 100%;
       display: grid;
       grid-template-rows: auto 1fr auto;
       align-items: center;
       justify-items: center;
-      gap: .1rem;
+      padding: 5px;
       text-align: center;
+      isolation: isolate;
     }
-    #inmu-chain-prototype .unit-name {
-      font-weight: 500;
+    .unit::before {
+      content: "";
+      position: absolute;
+      inset: 4px;
+      z-index: -1;
+      border-radius: 11px;
+      opacity: .9;
+      background: linear-gradient(145deg, rgba(34,211,238,.24), rgba(139,92,246,.24));
+    }
+    .cpu .unit::before {
+      background: linear-gradient(145deg, rgba(251,113,133,.26), rgba(245,158,11,.22));
+    }
+    .unit-name {
       max-width: 100%;
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
+      font-size: .78rem;
+      font-weight: 900;
+      text-shadow: 0 1px 4px rgba(0,0,0,.7);
     }
-    #inmu-chain-prototype .arrows {
+    .portrait {
+      width: min(44px, 56%);
+      aspect-ratio: 1;
       display: grid;
-      grid-template-columns: repeat(3, 1.05em);
-      grid-template-rows: repeat(3, 1.05em);
+      place-items: center;
+      border-radius: 50%;
+      color: #06111a;
+      background: linear-gradient(135deg, var(--player), var(--green));
+      border: 2px solid rgba(255,255,255,.46);
+      font-size: 1.18rem;
+      font-weight: 900;
+      box-shadow: 0 0 18px rgba(34,211,238,.28);
+    }
+    .cpu .portrait {
+      background: linear-gradient(135deg, var(--cpu), var(--cpu-2));
+      box-shadow: 0 0 18px rgba(251,113,133,.26);
+    }
+    .leader .portrait {
+      background: linear-gradient(135deg, var(--gold), #fff7ad);
+      box-shadow: 0 0 24px rgba(250,204,21,.35);
+    }
+    .arrows {
+      position: absolute;
+      inset: 5px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
       align-items: center;
       justify-items: center;
-      color: var(--foreground);
-      font-weight: 500;
+      pointer-events: none;
+      color: var(--ink);
+      font-size: .8rem;
+      font-weight: 900;
       line-height: 1;
     }
-    #inmu-chain-prototype .arrows span {
-      opacity: .18;
+    .arrows span {
+      opacity: .14;
     }
-    #inmu-chain-prototype .arrows .on {
+    .arrows .on {
       opacity: 1;
-      color: var(--viz-series-1);
+      color: var(--gold);
+      filter: drop-shadow(0 0 5px rgba(250,204,21,.7));
     }
-    #inmu-chain-prototype .cpu .arrows .on {
-      color: var(--viz-series-2);
-    }
-    #inmu-chain-prototype .stats {
+    .stats {
       display: flex;
-      gap: .35rem;
+      gap: 3px;
       align-items: center;
       justify-content: center;
-      font-size: calc(var(--font-size-base) * .82);
-      color: var(--foreground);
+      font-size: .68rem;
+      font-weight: 900;
     }
-    #inmu-chain-prototype .leader {
-      outline: 2px solid var(--ring);
-      outline-offset: -3px;
+    .stats span {
+      min-width: 30px;
+      border-radius: 999px;
+      padding: 2px 5px;
+      background: rgba(0,0,0,.42);
+      border: 1px solid rgba(255,255,255,.14);
     }
-    #inmu-chain-prototype .active-flash {
-      animation: chainPulse .34s ease;
+    .leader {
+      outline: 2px solid rgba(250,204,21,.8);
+      outline-offset: -4px;
     }
-    #inmu-chain-prototype .damage {
+    .active-flash {
+      animation: chainPulse .36s ease;
+    }
+    .damage {
       position: absolute;
-      inset: auto .2rem .15rem auto;
-      color: var(--destructive);
-      font-weight: 500;
+      z-index: 4;
+      inset: auto 5px 6px auto;
+      color: #fff;
+      border-radius: 999px;
+      padding: 2px 6px;
+      background: var(--danger);
+      font-weight: 900;
       pointer-events: none;
-      animation: floatHit .55s ease forwards;
+      animation: floatHit .65s ease forwards;
+      box-shadow: 0 0 16px rgba(251,113,133,.45);
     }
-    #inmu-chain-prototype .card-btn {
-      min-width: min(100%, 9rem);
+    .combo {
+      position: absolute;
+      z-index: 3;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(-6deg);
+      display: none;
+      color: #090d14;
+      background: linear-gradient(135deg, var(--gold), #fff4a3);
+      border-radius: 12px;
+      padding: 8px 14px;
+      font-weight: 1000;
+      letter-spacing: .08em;
+      box-shadow: 0 18px 40px rgba(0,0,0,.38);
+      pointer-events: none;
+    }
+    .combo.show {
+      display: block;
+      animation: comboPop .62s ease forwards;
+    }
+    .hand {
+      width: min(100%, 610px);
       display: grid;
-      gap: .2rem;
-      text-align: left;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 9px;
+      margin-top: 12px;
     }
-    #inmu-chain-prototype .card-btn[aria-pressed="true"] {
-      background: var(--primary);
-      color: var(--primary-foreground);
-    }
-    #inmu-chain-prototype .card-meta {
-      display: flex;
-      gap: .45rem;
+    .card-btn {
+      min-height: 112px;
+      position: relative;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
       align-items: center;
-      justify-content: space-between;
-      font-size: calc(var(--font-size-base) * .82);
+      gap: 6px;
+      text-align: left;
+      border-radius: 14px;
+      padding: 10px;
+      color: var(--ink);
+      background:
+        linear-gradient(145deg, rgba(34,211,238,.22), rgba(139,92,246,.16)),
+        rgba(255,255,255,.06);
+      border: 1px solid rgba(34,211,238,.34);
+      box-shadow: 0 12px 26px rgba(0,0,0,.26);
+      overflow: hidden;
     }
-    #inmu-chain-prototype .log {
-      min-height: 1.5rem;
-      color: var(--foreground);
+    .card-btn::after {
+      content: "";
+      position: absolute;
+      right: -24px;
+      top: -24px;
+      width: 70px;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: rgba(255,255,255,.12);
     }
-    #inmu-chain-prototype .result {
-      font-weight: 500;
+    .card-btn[aria-pressed="true"] {
+      transform: translateY(-4px);
+      border-color: rgba(250,204,21,.95);
+      box-shadow: 0 0 0 3px rgba(250,204,21,.18), 0 18px 34px rgba(0,0,0,.34);
+    }
+    .card-name {
+      font-weight: 1000;
+      letter-spacing: .02em;
+    }
+    .card-sigil {
+      width: 42px;
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      color: #06111a;
+      background: linear-gradient(135deg, var(--player), var(--green));
+      border: 2px solid rgba(255,255,255,.48);
+      font-size: 1.2rem;
+      font-weight: 1000;
+    }
+    .card-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      font-size: .76rem;
+      color: var(--soft);
+      font-weight: 800;
+    }
+    .chip {
+      border-radius: 999px;
+      padding: 2px 6px;
+      background: rgba(0,0,0,.28);
+      border: 1px solid rgba(255,255,255,.12);
+    }
+    .logbar {
+      position: relative;
+      z-index: 1;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 10px;
+      border-radius: 12px;
+      padding: 8px 12px;
+      color: var(--soft);
+      background: rgba(0,0,0,.24);
+      border: 1px solid rgba(255,255,255,.1);
+      text-align: center;
+      font-weight: 700;
     }
     @keyframes chainPulse {
-      0% { transform: scale(1); }
-      45% { transform: scale(1.05); }
-      100% { transform: scale(1); }
+      0% { transform: scale(1); filter: brightness(1); }
+      45% { transform: scale(1.07); filter: brightness(1.35); }
+      100% { transform: scale(1); filter: brightness(1); }
+    }
+    @keyframes hitCell {
+      0%, 100% { box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 8px 18px rgba(0,0,0,.22); }
+      38% { box-shadow: 0 0 0 4px rgba(251,113,133,.24), 0 0 24px rgba(251,113,133,.52); }
     }
     @keyframes floatHit {
-      0% { opacity: 0; transform: translateY(.2rem); }
-      25% { opacity: 1; }
-      100% { opacity: 0; transform: translateY(-1rem); }
+      0% { opacity: 0; transform: translateY(6px) scale(.86); }
+      25% { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(-22px) scale(1.08); }
     }
-    @media (max-width: 520px) {
-      #inmu-chain-prototype .meters {
-        grid-template-columns: 1fr;
+    @keyframes comboPop {
+      0% { opacity: 0; transform: translate(-50%, -50%) rotate(-8deg) scale(.78); }
+      30% { opacity: 1; transform: translate(-50%, -50%) rotate(-6deg) scale(1.08); }
+      100% { opacity: 0; transform: translate(-50%, -80%) rotate(-3deg) scale(1); }
+    }
+    @media (max-width: 620px) {
+      body {
+        padding-inline: 6px;
       }
-      #inmu-chain-prototype .topbar {
-        align-items: stretch;
+      .game {
+        padding: 9px;
+        border-radius: 14px;
+      }
+      .leader-row {
+        padding: 8px;
+      }
+      .leader-avatar {
+        width: 44px;
+      }
+      .board-wrap {
+        padding: 7px;
+      }
+      .board {
+        gap: 5px;
+      }
+      .hand {
+        gap: 6px;
+      }
+      .card-btn {
+        min-height: 104px;
+        padding: 8px;
+      }
+      .card-sigil {
+        width: 36px;
       }
     }
   </style>
-
-  <div class="topbar">
-    <button type="button" class="btn btn-primary" id="icp-new">リスタート</button>
-    <button type="button" class="btn" id="icp-skill">必殺技</button>
-    <span class="viz-badge" id="icp-turn">PLAYER TURN</span>
-    <span class="result" id="icp-result"></span>
-  </div>
-
-  <div class="meters" aria-label="HPと必殺技ゲージ">
-    <div class="meter">
-      <div class="meter-head"><span>PLAYER HP</span><span id="icp-player-hp">30</span></div>
-      <div class="bar" aria-hidden="true"><div class="fill" id="icp-player-hpbar"></div></div>
-      <div class="text-small text-muted">ゲージ <span id="icp-player-gauge">0</span>/10</div>
+</head>
+<body>
+  <main>
+    <div class="title-row">
+      <div>
+        <h1>INMU Chain</h1>
+        <div class="subtitle">3 x 5 arrow-link battle prototype</div>
+      </div>
+      <div class="badge">CPU TRAINING</div>
     </div>
-    <div class="meter">
-      <div class="meter-head"><span>CPU HP</span><span id="icp-cpu-hp">30</span></div>
-      <div class="bar" aria-hidden="true"><div class="fill cpu-fill" id="icp-cpu-hpbar"></div></div>
-      <div class="text-small text-muted">ゲージ <span id="icp-cpu-gauge">0</span>/10</div>
-    </div>
-  </div>
 
-  <div class="arena">
-    <div class="board" id="icp-board" role="grid" aria-label="5行3列のバトル盤面"></div>
-    <div class="hand" id="icp-hand" aria-label="手札"></div>
-    <div class="logbar">
-      <span class="log" id="icp-log">手札を選んで、空きマスに配置。</span>
-    </div>
-  </div>
+    <section class="game" id="game">
+      <div class="topbar">
+        <div class="actions">
+          <button type="button" class="btn btn-primary" id="new-game">リスタート</button>
+          <button type="button" class="btn btn-special" id="special">LINK BURST</button>
+        </div>
+        <div class="status-strip">
+          <span class="badge" id="turn">PLAYER TURN</span>
+          <span class="result" id="result"></span>
+        </div>
+      </div>
+
+      <div class="leader-row cpu" aria-label="CPUリーダー">
+        <div class="leader-avatar">CPU</div>
+        <div class="leader-main">
+          <div class="leader-name"><span>RIVAL LEADER</span><span id="cpu-hp">30</span></div>
+          <div class="hp-track"><div class="hp-fill cpu-fill" id="cpu-hpbar"></div></div>
+          <div class="gauge-track"><div class="gauge-fill cpu-fill" id="cpu-gaugebar"></div></div>
+        </div>
+      </div>
+
+      <div class="arena">
+        <div class="board-wrap">
+          <div class="combo" id="combo">CHAIN x2</div>
+          <div class="board" id="board" role="grid" aria-label="5行3列のバトル盤面"></div>
+        </div>
+      </div>
+
+      <div class="leader-row player" aria-label="プレイヤーリーダー">
+        <div class="leader-main">
+          <div class="leader-name"><span>YOUR LEADER</span><span id="player-hp">30</span></div>
+          <div class="hp-track"><div class="hp-fill" id="player-hpbar"></div></div>
+          <div class="gauge-track"><div class="gauge-fill" id="player-gaugebar"></div></div>
+        </div>
+        <div class="leader-avatar">YOU</div>
+      </div>
+
+      <div class="hand" id="hand" aria-label="手札"></div>
+      <div class="logbar" id="log">手札を選んで、空きマスに配置。</div>
+    </section>
+  </main>
 
   <script>
     (() => {
-      const root = document.getElementById('inmu-chain-prototype');
-      const boardEl = root.querySelector('#icp-board');
-      const handEl = root.querySelector('#icp-hand');
-      const logEl = root.querySelector('#icp-log');
-      const resultEl = root.querySelector('#icp-result');
-      const turnEl = root.querySelector('#icp-turn');
-      const skillBtn = root.querySelector('#icp-skill');
+      const boardEl = document.getElementById('board');
+      const handEl = document.getElementById('hand');
+      const logEl = document.getElementById('log');
+      const resultEl = document.getElementById('result');
+      const turnEl = document.getElementById('turn');
+      const comboEl = document.getElementById('combo');
+      const specialBtn = document.getElementById('special');
       const dirs = {
         N: [-1, 0, '↑'], NE: [-1, 1, '↗'], E: [0, 1, '→'], SE: [1, 1, '↘'],
         S: [1, 0, '↓'], SW: [1, -1, '↙'], W: [0, -1, '←'], NW: [-1, -1, '↖']
       };
       const arrowCells = ['NW','N','NE','W','C','E','SW','S','SE'];
       const roster = [
-        { name: '拓也', hp: 7, atk: 3, arrows: ['N','NE','NW'], skill: 'チェイン火力' },
-        { name: 'ニャルシアン', hp: 5, atk: 2, arrows: ['N','E','W','SE','SW'], skill: '回復支援' },
-        { name: 'レオン', hp: 9, atk: 2, arrows: ['N','E','S','W'], skill: '守護強化' },
-        { name: 'INMUくん', hp: 4, atk: 4, arrows: ['NE','NW','SE','SW'], skill: '奇襲' },
-        { name: 'ミラ', hp: 6, atk: 2, arrows: ['N','NE','E'], skill: '右展開' },
-        { name: 'ゴウ', hp: 8, atk: 3, arrows: ['N','S'], skill: '直線突破' }
+        { name: '拓也', mark: '卍', hp: 7, atk: 3, arrows: ['N','NE','NW'], skill: '追撃' },
+        { name: 'ニャルシアン', mark: '肉', hp: 5, atk: 2, arrows: ['N','E','W','SE','SW'], skill: '回復' },
+        { name: 'レオン', mark: '王', hp: 9, atk: 2, arrows: ['N','E','S','W'], skill: '守護' },
+        { name: 'INMUくん', mark: '?', hp: 4, atk: 4, arrows: ['NE','NW','SE','SW'], skill: '奇襲' },
+        { name: 'ミラ', mark: '光', hp: 6, atk: 2, arrows: ['N','NE','E'], skill: '展開' },
+        { name: 'ゴウ', mark: '剛', hp: 8, atk: 3, arrows: ['N','S'], skill: '突破' }
       ];
       let state;
+      let lastEffects = [];
 
       function freshUnit(base, side, leader = false) {
         return {
-          id: Math.random().toString(36).slice(2),
+          id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2),
           name: leader ? (side === 'player' ? '自リーダー' : '敵リーダー') : base.name,
+          mark: leader ? (side === 'player' ? 'YOU' : 'CPU') : base.mark,
           hp: leader ? 30 : base.hp,
           maxHp: leader ? 30 : base.hp,
           atk: leader ? 0 : base.atk,
@@ -343,8 +656,9 @@
         };
         state.cells[indexOf(4, 1)] = freshUnit({}, 'player', true);
         state.cells[indexOf(0, 1)] = freshUnit({}, 'cpu', true);
-        logEl.textContent = '手札を選んで、空きマスに配置。';
+        lastEffects = [];
         resultEl.textContent = '';
+        logEl.textContent = '手札を選んで、空きマスに配置。';
         render();
       }
 
@@ -363,44 +677,57 @@
         }).join('') + '</div>';
       }
 
+      function renderUnit(unit) {
+        return '<div class="unit"><div class="unit-name">' + unit.name + '</div>' +
+          '<div class="portrait">' + unit.mark + '</div>' +
+          renderArrows(unit) +
+          '<div class="stats"><span>HP ' + unit.hp + '</span><span>ATK ' + unit.atk + '</span></div></div>';
+      }
+
       function render() {
         boardEl.innerHTML = '';
         state.cells.forEach((unit, i) => {
-          const [r, c] = posOf(i);
+          const [r] = posOf(i);
           const cell = document.createElement('button');
           cell.type = 'button';
-          cell.className = 'cell btn-ghost ' + (r < 2 ? 'cpu-zone' : r > 2 ? 'player-zone' : '');
+          cell.className = 'cell ' + (r < 2 ? 'cpu-zone' : r > 2 ? 'player-zone' : '');
+          if (lastEffects.some(e => e.index === i)) cell.classList.add('hit-cell');
           cell.setAttribute('role', 'gridcell');
           cell.setAttribute('aria-label', unit ? unit.name + ' HP ' + unit.hp : '空きマス');
           cell.disabled = state.locked || state.over || state.turn !== 'player' || !!unit;
           cell.addEventListener('click', () => placePlayer(i));
           if (unit) {
             cell.classList.add(unit.side, unit.leader ? 'leader' : 'fighter');
-            cell.innerHTML = '<div class="unit"><div class="unit-name">' + unit.name + '</div>' +
-              renderArrows(unit) +
-              '<div class="stats"><span>HP ' + unit.hp + '</span><span>ATK ' + unit.atk + '</span></div></div>';
+            cell.innerHTML = renderUnit(unit);
           }
           boardEl.appendChild(cell);
         });
+
+        lastEffects.forEach(effect => showDamage(effect.index, effect.amount));
+        window.setTimeout(() => { lastEffects = []; }, 700);
+
         handEl.innerHTML = '';
         state.hand.forEach((card, i) => {
           const btn = document.createElement('button');
           btn.type = 'button';
-          btn.className = 'btn card-btn';
+          btn.className = 'card-btn';
           btn.setAttribute('aria-pressed', String(state.selected === i));
           btn.disabled = state.locked || state.over || state.turn !== 'player';
-          btn.innerHTML = '<span>' + card.name + '</span><span class="card-meta"><span>HP ' + card.hp + ' / ATK ' + card.atk + '</span><span>' + card.skill + '</span></span>';
+          btn.innerHTML = '<div class="card-name">' + card.name + '</div>' +
+            '<div class="card-sigil">' + card.mark + '</div>' +
+            '<div class="card-meta"><span class="chip">HP ' + card.hp + '</span><span class="chip">ATK ' + card.atk + '</span><span class="chip">' + card.skill + '</span></div>';
           btn.addEventListener('click', () => { state.selected = i; render(); });
           handEl.appendChild(btn);
         });
-        root.querySelector('#icp-player-hp').textContent = state.playerHp;
-        root.querySelector('#icp-cpu-hp').textContent = state.cpuHp;
-        root.querySelector('#icp-player-gauge').textContent = state.playerGauge;
-        root.querySelector('#icp-cpu-gauge').textContent = state.cpuGauge;
-        root.querySelector('#icp-player-hpbar').style.width = Math.max(0, state.playerHp / 30 * 100) + '%';
-        root.querySelector('#icp-cpu-hpbar').style.width = Math.max(0, state.cpuHp / 30 * 100) + '%';
+
+        document.getElementById('player-hp').textContent = state.playerHp;
+        document.getElementById('cpu-hp').textContent = state.cpuHp;
+        document.getElementById('player-hpbar').style.width = Math.max(0, state.playerHp / 30 * 100) + '%';
+        document.getElementById('cpu-hpbar').style.width = Math.max(0, state.cpuHp / 30 * 100) + '%';
+        document.getElementById('player-gaugebar').style.width = Math.max(0, state.playerGauge / 10 * 100) + '%';
+        document.getElementById('cpu-gaugebar').style.width = Math.max(0, state.cpuGauge / 10 * 100) + '%';
         turnEl.textContent = state.turn === 'player' ? 'PLAYER TURN' : 'CPU TURN';
-        skillBtn.disabled = state.locked || state.over || state.turn !== 'player' || state.playerGauge < 10;
+        specialBtn.disabled = state.locked || state.over || state.turn !== 'player' || state.playerGauge < 10;
       }
 
       function placePlayer(i) {
@@ -409,7 +736,8 @@
         state.cells[i] = freshUnit(card, 'player');
         state.hand[state.selected] = roster[Math.floor(Math.random() * roster.length)];
         state.playerGauge = Math.min(10, state.playerGauge + 2);
-        resolveChain(i, 'player');
+        const hits = resolveChain(i, 'player');
+        if (hits > 1) showCombo(hits);
         if (!state.over) endPlayerTurn();
       }
 
@@ -417,7 +745,7 @@
         state.turn = 'cpu';
         state.locked = true;
         render();
-        setTimeout(cpuTurn, 650);
+        window.setTimeout(cpuTurn, 720);
       }
 
       function cpuTurn() {
@@ -430,7 +758,8 @@
           state.cells[pick.i] = freshUnit(pick.card, 'cpu');
           state.cpuGauge = Math.min(10, state.cpuGauge + 2);
           logEl.textContent = 'CPUが' + pick.card.name + 'を配置。';
-          resolveChain(pick.i, 'cpu');
+          const hits = resolveChain(pick.i, 'cpu');
+          if (hits > 1) showCombo(hits);
         }
         if (!state.over) {
           if (state.cpuGauge >= 10 && state.playerHp <= 8) useCpuSkill();
@@ -445,9 +774,11 @@
         let score = side === 'cpu' ? r : 4 - r;
         for (const d of card.arrows) {
           const [dr, dc] = dirs[d];
-          const target = state.cells[indexOf(r + dr, c + dc)];
-          if (target && target.side !== side) score += target.leader ? 9 : 4;
-          if (target && target.side === side && !target.leader) score += 2;
+          const nr = r + dr, nc = c + dc;
+          if (!inBounds(nr, nc)) continue;
+          const target = state.cells[indexOf(nr, nc)];
+          if (target && target.side !== side) score += target.leader ? 10 : 4;
+          if (target && target.side === side && !target.leader) score += 3;
         }
         return score + Math.random();
       }
@@ -456,6 +787,7 @@
         const queue = [startIndex];
         const seen = new Set();
         let hits = 0;
+        lastEffects = [];
         while (queue.length) {
           const i = queue.shift();
           if (seen.has(i)) continue;
@@ -485,6 +817,7 @@
         }
         checkWin();
         render();
+        return hits;
       }
 
       function damageTarget(i, amount, side) {
@@ -497,8 +830,8 @@
           target.hp -= amount;
           if (target.hp <= 0) state.cells[i] = null;
         }
-        showDamage(i, amount);
-        logEl.textContent = (side === 'player' ? 'チェイン攻撃！ ' : 'CPUチェイン！ ') + amount + 'ダメージ。';
+        lastEffects.push({ index: i, amount });
+        logEl.textContent = (side === 'player' ? 'LINK CHAIN! ' : 'CPU LINK! ') + amount + 'ダメージ。';
       }
 
       function showDamage(i, amount) {
@@ -518,12 +851,19 @@
         cell.classList.add('active-flash');
       }
 
+      function showCombo(hits) {
+        comboEl.textContent = 'CHAIN x' + hits;
+        comboEl.classList.remove('show');
+        void comboEl.offsetWidth;
+        comboEl.classList.add('show');
+      }
+
       function checkWin() {
         if (state.cpuHp <= 0 || state.playerHp <= 0) {
           state.over = true;
           state.locked = false;
           resultEl.textContent = state.cpuHp <= 0 ? 'WIN' : 'LOSE';
-          logEl.textContent = state.cpuHp <= 0 ? '勝利！チェインで押し切った。' : '敗北。配置のつなぎ方を変えて再挑戦。';
+          logEl.textContent = state.cpuHp <= 0 ? '勝利！リンクをつないで押し切った。' : '敗北。矢印の向きと配置順を変えて再挑戦。';
         }
       }
 
@@ -531,7 +871,8 @@
         if (state.playerGauge < 10 || state.over) return;
         state.playerGauge = 0;
         state.cpuHp = Math.max(0, state.cpuHp - 6);
-        logEl.textContent = '必殺技：敵リーダーに6ダメージ。';
+        lastEffects = [{ index: indexOf(0, 1), amount: 6 }];
+        logEl.textContent = 'LINK BURST：敵リーダーに6ダメージ。';
         checkWin();
         if (!state.over) endPlayerTurn();
         render();
@@ -540,16 +881,15 @@
       function useCpuSkill() {
         state.cpuGauge = 0;
         state.playerHp = Math.max(0, state.playerHp - 5);
-        logEl.textContent = 'CPU必殺技：自リーダーに5ダメージ。';
+        lastEffects = [{ index: indexOf(4, 1), amount: 5 }];
+        logEl.textContent = 'CPU BURST：自リーダーに5ダメージ。';
         checkWin();
       }
 
-      root.querySelector('#icp-new').addEventListener('click', newGame);
-      skillBtn.addEventListener('click', usePlayerSkill);
+      document.getElementById('new-game').addEventListener('click', newGame);
+      specialBtn.addEventListener('click', usePlayerSkill);
       newGame();
     })();
   </script>
-</div>
-</main>
 </body>
 </html>
