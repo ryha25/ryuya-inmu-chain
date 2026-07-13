@@ -942,6 +942,379 @@
       text-align: center;
       font-weight: 700;
     }
+    .cell-guide {
+      position: absolute;
+      inset: 12px;
+      display: grid;
+      place-items: center;
+      border-radius: 9px;
+      color: rgba(49,244,211,.72);
+      opacity: .58;
+      pointer-events: none;
+      filter: drop-shadow(0 0 8px rgba(49,244,211,.42));
+    }
+    .cell-guide .arrows {
+      inset: 8px;
+      font-size: 1.08rem;
+    }
+    .cell-guide .arrows span {
+      opacity: .22;
+      color: rgba(49,244,211,.56);
+    }
+    .cell-guide .arrows .on {
+      opacity: .72;
+      color: rgba(49,244,211,.82);
+      filter: drop-shadow(0 0 8px rgba(49,244,211,.72));
+    }
+    .league-shell .title-row {
+      display: none;
+    }
+    .league-shell main {
+      width: min(100%, 1460px);
+    }
+    .league-shell .game {
+      min-height: min(78vw, 820px);
+      padding: 112px clamp(148px, 18vw, 250px) 138px;
+      border-radius: 0;
+      border-color: rgba(49,244,211,.32);
+      background:
+        linear-gradient(90deg, rgba(0,0,0,.7), transparent 24% 76%, rgba(0,0,0,.72)),
+        radial-gradient(circle at 50% 18%, rgba(155,92,255,.28), transparent 24%),
+        linear-gradient(180deg, rgba(2,7,15,.6), rgba(2,5,11,.94)),
+        linear-gradient(90deg, #07111e, #02050a 50%, #120511);
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,.08),
+        0 28px 120px rgba(0,0,0,.7),
+        inset 0 0 70px rgba(49,244,211,.1);
+    }
+    .league-shell .game::before {
+      background-image:
+        linear-gradient(90deg, transparent 0 20%, rgba(49,244,211,.14) 20.2% 20.5%, transparent 20.8% 79%, rgba(255,79,139,.14) 79.2% 79.5%, transparent 79.8%),
+        repeating-linear-gradient(90deg, transparent 0 38px, rgba(255,255,255,.035) 39px 40px),
+        repeating-linear-gradient(0deg, transparent 0 30px, rgba(255,255,255,.03) 31px 32px);
+      background-size: auto, auto, auto;
+      opacity: .8;
+      mask-image: none;
+    }
+    .league-shell .game::after {
+      inset: 24% 18% 2%;
+      border-left: 2px solid rgba(49,244,211,.55);
+      border-right: 2px solid rgba(255,79,139,.34);
+      background:
+        linear-gradient(90deg, rgba(49,244,211,.18), transparent 12% 88%, rgba(255,79,139,.16)),
+        repeating-linear-gradient(90deg, rgba(49,244,211,.13) 0 1px, transparent 1px 58px),
+        repeating-linear-gradient(0deg, rgba(255,255,255,.08) 0 1px, transparent 1px 44px);
+      transform: perspective(780px) rotateX(67deg);
+      opacity: .56;
+    }
+    .league-shell .topbar {
+      position: static;
+      z-index: 6;
+      margin: 0;
+    }
+    .league-shell .actions {
+      display: contents;
+    }
+    .league-shell .status-strip {
+      position: absolute;
+      z-index: 8;
+      top: 8px;
+      left: 50%;
+      min-width: 250px;
+      min-height: 82px;
+      display: grid;
+      grid-template-rows: auto auto;
+      place-items: center;
+      transform: translateX(-50%);
+      background:
+        linear-gradient(135deg, transparent 0 14%, rgba(49,244,211,.16) 15% 85%, transparent 86%),
+        rgba(0,0,0,.54);
+      border: 1px solid rgba(49,244,211,.42);
+      clip-path: polygon(10% 0, 90% 0, 100% 28%, 82% 100%, 18% 100%, 0 28%);
+      box-shadow: 0 0 24px rgba(49,244,211,.28);
+    }
+    .league-shell .status-strip::before {
+      content: "TURN 03";
+      color: #aefcff;
+      font-size: 1.15rem;
+      font-weight: 1000;
+      letter-spacing: .08em;
+      text-shadow: 0 0 12px rgba(49,244,211,.9);
+    }
+    .league-shell #turn {
+      min-height: auto;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: #fff;
+      font-size: 1.08rem;
+      text-shadow: 0 0 12px rgba(49,244,211,.85);
+    }
+    .league-shell .result {
+      position: absolute;
+      top: 54px;
+      font-size: .86rem;
+    }
+    .league-shell #new-game {
+      position: absolute;
+      z-index: 9;
+      left: 18px;
+      bottom: 18px;
+      min-height: 34px;
+      border-radius: 999px;
+      background: rgba(0,0,0,.44);
+    }
+    .league-shell #special {
+      position: absolute;
+      z-index: 9;
+      right: 34px;
+      bottom: 20px;
+      width: clamp(118px, 13vw, 166px);
+      min-height: auto;
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      padding: 18px;
+      color: #bffcff;
+      background:
+        radial-gradient(circle at 50% 50%, rgba(49,244,211,.26), rgba(0,0,0,.62) 58%, rgba(49,244,211,.18) 60%),
+        conic-gradient(from 0deg, rgba(49,244,211,.95), rgba(41,169,255,.36), rgba(49,244,211,.95));
+      border: 2px solid rgba(49,244,211,.7);
+      box-shadow: 0 0 22px rgba(49,244,211,.58), inset 0 0 28px rgba(49,244,211,.18);
+      font-size: clamp(.85rem, 1.8vw, 1.2rem);
+      text-align: center;
+      text-shadow: 0 0 12px rgba(49,244,211,.95);
+    }
+    .league-shell .leader-row {
+      position: absolute;
+      z-index: 7;
+      top: 24px;
+      width: min(37vw, 500px);
+      min-height: 92px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+    .league-shell .leader-row.player {
+      left: 26px;
+      margin: 0;
+    }
+    .league-shell .leader-row.cpu {
+      right: 26px;
+      margin: 0;
+      flex-direction: row-reverse;
+    }
+    .league-shell .leader-row.player .leader-avatar {
+      order: -1;
+    }
+    .league-shell .leader-avatar {
+      width: clamp(74px, 9vw, 112px);
+      border-width: 3px;
+      background:
+        radial-gradient(circle at 40% 28%, rgba(255,255,255,.96), rgba(49,244,211,.56) 34%, rgba(5,12,20,.94) 72%);
+      box-shadow: 0 0 0 5px rgba(0,0,0,.52), 0 0 26px rgba(49,244,211,.58);
+      font-size: clamp(.86rem, 1.8vw, 1.15rem);
+    }
+    .league-shell .cpu .leader-avatar {
+      background:
+        radial-gradient(circle at 40% 28%, rgba(255,244,220,.96), rgba(255,79,139,.58) 34%, rgba(20,5,16,.94) 72%);
+      box-shadow: 0 0 0 5px rgba(0,0,0,.52), 0 0 26px rgba(255,79,139,.58);
+    }
+    .league-shell .leader-main {
+      flex: 1;
+      min-width: 0;
+      gap: 8px;
+      padding: 10px 14px;
+      background:
+        linear-gradient(90deg, rgba(49,244,211,.2), rgba(0,0,0,.5) 70%, transparent),
+        rgba(0,0,0,.4);
+      border-top: 1px solid rgba(49,244,211,.48);
+      border-bottom: 1px solid rgba(49,244,211,.28);
+      clip-path: polygon(0 0, 96% 0, 100% 50%, 96% 100%, 0 100%);
+    }
+    .league-shell .cpu .leader-main {
+      background:
+        linear-gradient(270deg, rgba(255,79,139,.24), rgba(0,0,0,.5) 70%, transparent),
+        rgba(0,0,0,.4);
+      border-color: rgba(255,79,139,.42);
+      clip-path: polygon(4% 0, 100% 0, 100% 100%, 4% 100%, 0 50%);
+    }
+    .league-shell .leader-name {
+      font-size: clamp(.9rem, 2vw, 1.35rem);
+      font-style: italic;
+      text-transform: uppercase;
+    }
+    .league-shell .hp-track {
+      height: 18px;
+      border-color: rgba(255,255,255,.26);
+      background: rgba(0,0,0,.62);
+      box-shadow: inset 0 0 10px rgba(0,0,0,.64);
+    }
+    .league-shell .gauge-track {
+      display: none;
+    }
+    .league-shell .arena {
+      z-index: 3;
+      min-height: 600px;
+      align-content: center;
+      perspective: 680px;
+      perspective-origin: 50% 18%;
+    }
+    .league-shell .board-wrap {
+      padding: 14px;
+      border-radius: 18px;
+      border-color: rgba(49,244,211,.7);
+      background:
+        linear-gradient(180deg, rgba(255,79,139,.25), rgba(155,92,255,.12) 34%, rgba(49,244,211,.24) 68%, rgba(49,244,211,.16)),
+        rgba(2, 13, 20, .64);
+      box-shadow:
+        inset 0 0 44px rgba(255,255,255,.08),
+        inset 0 -40px 74px rgba(0,0,0,.42),
+        0 0 0 2px rgba(255,255,255,.08),
+        0 22px 0 rgba(0,0,0,.36),
+        0 44px 66px rgba(0,0,0,.62),
+        0 0 42px rgba(49,244,211,.5);
+      transform: rotateX(18deg) translateY(-8px) scale(1.02);
+    }
+    .league-shell .board {
+      gap: 11px;
+    }
+    .league-shell .cell {
+      border-radius: 14px;
+      border-color: rgba(49,244,211,.55);
+      background:
+        linear-gradient(145deg, rgba(49,244,211,.18), rgba(49,244,211,.035)),
+        rgba(5,28,31,.56);
+      box-shadow:
+        inset 0 0 18px rgba(49,244,211,.16),
+        inset 0 1px 0 rgba(255,255,255,.18),
+        0 8px 0 rgba(0,0,0,.38),
+        0 0 16px rgba(49,244,211,.18);
+    }
+    .league-shell .cell.cpu-zone {
+      border-color: rgba(255,79,219,.58);
+      background:
+        linear-gradient(145deg, rgba(255,79,219,.22), rgba(155,92,255,.08)),
+        rgba(47,10,45,.62);
+      box-shadow:
+        inset 0 0 18px rgba(255,79,219,.16),
+        inset 0 1px 0 rgba(255,255,255,.18),
+        0 8px 0 rgba(0,0,0,.38),
+        0 0 16px rgba(255,79,219,.22);
+    }
+    .league-shell .cell::before {
+      inset: 10px;
+      border-style: solid;
+      border-color: rgba(255,255,255,.12);
+    }
+    .league-shell .cell::after {
+      top: 9px;
+      left: 12px;
+      color: rgba(255,255,255,.28);
+      font-size: .78rem;
+    }
+    .league-shell .skill-banner {
+      position: absolute;
+      z-index: 6;
+      right: 24px;
+      top: 46%;
+      width: clamp(210px, 20vw, 270px);
+      min-height: 136px;
+      flex-direction: column;
+      gap: 14px;
+      margin: 0;
+      border: 1px solid rgba(49,244,211,.36);
+      border-radius: 4px;
+      background:
+        linear-gradient(135deg, rgba(49,244,211,.1), transparent 36%),
+        rgba(0,0,0,.72);
+      clip-path: polygon(9% 0, 100% 0, 100% 82%, 88% 100%, 0 100%, 0 14%);
+    }
+    .league-shell .skill-banner::before,
+    .league-shell .skill-banner::after {
+      display: none;
+    }
+    .league-shell .combo {
+      display: grid;
+      left: auto;
+      right: calc(100% + clamp(26px, 5vw, 70px));
+      top: 44%;
+      min-width: 120px;
+      min-height: 146px;
+      place-items: center;
+      color: #aefcff;
+      background:
+        linear-gradient(135deg, rgba(49,244,211,.14), transparent),
+        rgba(0,0,0,.72);
+      border: 1px solid rgba(49,244,211,.48);
+      border-radius: 4px;
+      padding: 14px;
+      transform: translateY(-50%);
+      text-align: center;
+      text-shadow: 0 0 12px rgba(49,244,211,.82);
+      clip-path: polygon(12% 0, 100% 0, 100% 84%, 86% 100%, 0 100%, 0 14%);
+    }
+    .league-shell .combo::before {
+      content: "CHAIN";
+      display: block;
+      color: #8ffff4;
+      font-size: .72rem;
+      letter-spacing: .12em;
+    }
+    .league-shell .combo.show {
+      display: grid;
+    }
+    .league-shell .hand {
+      position: absolute;
+      z-index: 7;
+      left: 50%;
+      bottom: 10px;
+      width: min(44vw, 560px);
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      transform: translateX(-50%);
+      margin: 0;
+      padding: 8px;
+      border: 1px solid rgba(49,244,211,.32);
+      border-radius: 6px;
+      background: rgba(0,0,0,.54);
+      box-shadow: 0 0 22px rgba(49,244,211,.16);
+    }
+    .league-shell .card-btn {
+      min-height: 128px;
+      border-radius: 6px;
+      padding: 8px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.12), transparent 20%),
+        linear-gradient(145deg, rgba(49,244,211,.18), rgba(155,92,255,.18)),
+        rgba(3,14,22,.92);
+      border-color: rgba(255,255,255,.22);
+      box-shadow: inset 0 0 18px rgba(255,255,255,.06), 0 10px 18px rgba(0,0,0,.38);
+    }
+    .league-shell .card-sigil {
+      border-radius: 8px;
+      width: 50px;
+    }
+    .league-shell .logbar {
+      position: absolute;
+      z-index: 6;
+      left: 24px;
+      bottom: 146px;
+      width: clamp(210px, 21vw, 290px);
+      min-height: 76px;
+      margin: 0;
+      border-radius: 4px;
+      background: rgba(0,0,0,.64);
+      border-color: rgba(49,244,211,.34);
+      clip-path: polygon(0 0, 90% 0, 100% 22%, 100% 100%, 8% 100%, 0 82%);
+    }
+    .league-shell .portal-companion {
+      display: none;
+    }
     @keyframes chainPulse {
       0% { transform: scale(1); filter: brightness(1); }
       45% { transform: scale(1.07); filter: brightness(1.35); }
@@ -1042,7 +1415,7 @@
     }
   </style>
 </head>
-<body>
+<body class="league-shell">
   <main>
     <div class="title-row">
       <div class="title-left">
@@ -1221,7 +1594,10 @@
             cell.innerHTML = renderUnit(unit);
           } else if (!state.over && state.turn === 'player' && !state.locked) {
             const selectedCard = state.hand[state.selected];
-            cell.innerHTML = '<div class="placement-preview" aria-hidden="true">' + renderArrows(selectedCard) + '</div>';
+            cell.innerHTML = '<div class="cell-guide" aria-hidden="true">' + renderArrows({ arrows: ['N','E','S','W'] }) + '</div>' +
+              '<div class="placement-preview" aria-hidden="true">' + renderArrows(selectedCard) + '</div>';
+          } else {
+            cell.innerHTML = '<div class="cell-guide" aria-hidden="true">' + renderArrows({ arrows: ['N','E','S','W'] }) + '</div>';
           }
           boardEl.appendChild(cell);
         });
@@ -1255,7 +1631,7 @@
         document.getElementById('cpu-hpbar').style.width = Math.max(0, state.cpuHp / 30 * 100) + '%';
         document.getElementById('player-gaugebar').style.width = Math.max(0, state.playerGauge / 10 * 100) + '%';
         document.getElementById('cpu-gaugebar').style.width = Math.max(0, state.cpuGauge / 10 * 100) + '%';
-        turnEl.textContent = state.turn === 'player' ? 'PLAYER TURN' : 'CPU TURN';
+        turnEl.textContent = state.turn === 'player' ? 'TIME 45' : 'CPU THINK';
         specialBtn.disabled = state.locked || state.over || state.turn !== 'player' || state.playerGauge < 10;
         window.INMUPiece3D?.hydrate();
       }
